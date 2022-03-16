@@ -1,0 +1,52 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Section1: Flies
+
+## Brief Report
+
+This report analyzes the experimental source of data associated with "Sexual Activity and the Lifespan of Male Fruit flies"(1981) study from faraway(2005).
+In the study, 125 male fruit flies was randomly sampling to 5 groups, with 25 fruit flies each, differed into five conditions: solitary, one virgin female each day, 8 virgin females each day, one pregnant female each day and 8 pregnant female each day(pregnant females are unwilling to mate). The longevity and thorax length(known to effect lifetime) of males were measured. The main purpose is to determine the effect of copulation activities in different conditions on male fruit flies` longevity, by modeling corresponding data and interpreting coefficients to the model.
+
+For the use of model, Gama generalized linear model is suggested with log-transformation data. “thorax” variable is standardized by centering and scaling before putting into model. Table1 shows this regression model. Figure1 is created to evaluate the model. By making comparison between longevity data in histogram and the red curve represents gamma generalized linear model, we can say the model is ok, since the data seems similar to the model.
+
+From the model, the thorax length which is known can effect the lifespan of male fruitflies shows a significant directly proportion to longevity. As the effect by sexual activity to longevity, we can interpret that the groups of male fruitflies with virgin female live a slight longer than the solitary ones(one virgin female group 0.05 days longer, 8 virgin female group 0.082 days longer), however the difference is not significant to see (p – value > 0.05).  On the other hand, significant reduction on males` lifespan appears to the groups with pregnant females, 0.116 days less to the group with one pregnant female and 0.415 days less to the group with 8 pregnant females comparing to the solitary ones. 
+
+Consider the sexual willingness of females, we conduct the male fruitflies which live in a forced-sexual relationship to the females will have shorter lifespans comparing to the solitary ones.
+
+
+
+```{r , echo=FALSE}
+a <- data('fruitfly', package='faraway')
+normalize <- function(x){
+  return((x - mean(x))/sqrt(var(x)))
+}
+gamafly <- glm(longevity ~ normalize(thorax) + activity, family=Gamma(link = "log"), data=fruitfly)
+knitr::kable(summary(gamafly)$coef, digits = 3, cap = "Gamma generalized linear model to the male fruitflies in different sexual conditions")
+```
+
+
+```{r, echo=FALSE}
+shape = 1/summary(gamafly)$dispersion
+scale = exp(gamafly$coef["(Intercept)"])/shape
+hist(fruitfly$longevity, prob = TRUE, xlab = "longevity",ylim = c(0, 0.04), main = "Figure1: The density of male fruitflies` longevity")
+xSeq = seq(0, 120, len = 1000)
+lines(xSeq, dgamma(xSeq, shape = shape, scale = scale), col = "red")
+
+```
+
+
+## Appendix
+The r codes for modling is attached to this appendix:
+```{r fruitfly, eval=FALSE}
+install.packages("faraway")
+data('fruitfly', package='faraway')
+summary(fruitfly)
+normalize <- function(x){
+  return((x - mean(x))/sqrt(var(x)))
+}
+gamafly <- glm(longevity ~ normalize(thorax) + activity, 
+               family=Gamma(link = "log"), data=fruitfly)
+knitr::kable(summary(gamafly)$coef, digits = 3)
+```
